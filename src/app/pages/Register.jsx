@@ -130,7 +130,6 @@ export function Register() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full input-sharp pl-11"
-                    placeholder="John Doe"
                     required
                   />
                 </div>
@@ -147,7 +146,6 @@ export function Register() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full input-sharp pl-11"
-                    placeholder="you@example.com"
                     required
                   />
                 </div>
@@ -184,7 +182,6 @@ export function Register() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full input-sharp pl-11"
-                    placeholder="Min. 6 characters"
                     required
                   />
                 </div>
@@ -201,7 +198,6 @@ export function Register() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="w-full input-sharp pl-11"
-                    placeholder="Re-enter password"
                     required
                   />
                 </div>

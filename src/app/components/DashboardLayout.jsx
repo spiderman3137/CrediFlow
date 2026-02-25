@@ -41,6 +41,7 @@ const navigationByRole = {
   ],
   borrower: [
     { name: 'Dashboard', path: '/borrower/dashboard', icon: LayoutDashboard },
+    { name: 'Lender Offers', path: '/borrower/offers', icon: DollarSign },
     { name: 'Post Request', path: '/borrower/apply', icon: FilePlus },
     { name: 'EMI Schedule', path: '/borrower/emi', icon: Clock },
     { name: 'Payment History', path: '/borrower/history', icon: History },
@@ -113,8 +114,8 @@ export function DashboardLayout({ children }) {
                   key={item.path}
                   to={item.path}
                   className={`flex items-center gap-3 px-4 py-3 transition-colors ${isActive
-                      ? 'bg-[#5B2DFF] text-white'
-                      : 'text-gray-700 hover:bg-[#F3F0FF]'
+                    ? 'bg-[#5B2DFF] text-white'
+                    : 'text-gray-700 hover:bg-[#F3F0FF]'
                     }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
@@ -131,8 +132,8 @@ export function DashboardLayout({ children }) {
           <Link
             to={`/${user.role}/settings`}
             className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${location.pathname.includes('/settings')
-                ? 'bg-[#5B2DFF] text-white'
-                : 'text-gray-700 hover:bg-[#F3F0FF]'
+              ? 'bg-[#5B2DFF] text-white'
+              : 'text-gray-700 hover:bg-[#F3F0FF]'
               }`}
           >
             <Settings className="w-5 h-5" />

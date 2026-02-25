@@ -12,11 +12,26 @@ export function LoanProvider({ children }) {
     }
   });
 
+  const [offers, setOffers] = useState(() => {
+    try {
+      const stored = localStorage.getItem('offers');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
   useEffect(() => {
     try {
       localStorage.setItem('loans', JSON.stringify(loans));
-    } catch {}
+    } catch { }
   }, [loans]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('offers', JSON.stringify(offers));
+    } catch { }
+  }, [offers]);
 
   const addLoan = (loan) => {
     const newLoan = {
@@ -35,8 +50,22 @@ export function LoanProvider({ children }) {
     );
   };
 
+  const addOffer = (offer) => {
+    const newOffer = {
+      id: Math.random().toString(36).substr(2, 9),
+      createdAt: new Date().toISOString(),
+      ...offer,
+    };
+    setOffers((prev) => [newOffer, ...prev]);
+    return newOffer;
+  };
+
+  const deleteOffer = (id) => {
+    setOffers((prev) => prev.filter((o) => o.id !== id));
+  };
+
   return (
-    <LoanContext.Provider value={{ loans, addLoan, updateLoanStatus }}>
+    <LoanContext.Provider value={{ loans, addLoan, updateLoanStatus, offers, addOffer, deleteOffer }}>
       {children}
     </LoanContext.Provider>
   );
