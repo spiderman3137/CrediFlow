@@ -78,15 +78,9 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <BorrowerDashboard /> },
       { path: 'apply', element: <BorrowerApply /> },
       { path: 'offers', element: <BorrowerOffers /> },
-<<<<<<< HEAD
       { path: 'emi', element: <BorrowerEMI /> },
       { path: 'history', element: <BorrowerHistory /> },
       { path: 'balance', element: <BorrowerBalance /> },
-=======
-      { path: 'emi', element: <BorrowerDashboard /> },
-      { path: 'history', element: <BorrowerDashboard /> },
-      { path: 'balance', element: <BorrowerDashboard /> },
->>>>>>> ec1228c5cb63b0c85528e7e4ba8456fadd32f9bf
       { path: 'settings', element: <Settings /> },
     ],
   },
