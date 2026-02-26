@@ -15,6 +15,9 @@ import { LenderOffers } from './pages/lender/LenderOffers';
 import { BorrowerDashboard } from './pages/borrower/BorrowerDashboard';
 import { BorrowerApply } from './pages/borrower/BorrowerApply';
 import { BorrowerOffers } from './pages/borrower/BorrowerOffers';
+import { BorrowerEMI } from './pages/borrower/BorrowerEMI';
+import { BorrowerHistory } from './pages/borrower/BorrowerHistory';
+import { BorrowerBalance } from './pages/borrower/BorrowerBalance';
 import { AnalystDashboard } from './pages/analyst/AnalystDashboard';
 
 import { ProtectedRoute } from './routes/ProtectedRoute';
@@ -75,9 +78,9 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <BorrowerDashboard /> },
       { path: 'apply', element: <BorrowerApply /> },
       { path: 'offers', element: <BorrowerOffers /> },
-      { path: 'emi', element: <BorrowerDashboard /> },
-      { path: 'history', element: <BorrowerDashboard /> },
-      { path: 'balance', element: <BorrowerDashboard /> },
+      { path: 'emi', element: <BorrowerEMI /> },
+      { path: 'history', element: <BorrowerHistory /> },
+      { path: 'balance', element: <BorrowerBalance /> },
       { path: 'settings', element: <Settings /> },
     ],
   },
