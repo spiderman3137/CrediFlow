@@ -65,6 +65,14 @@ export function DashboardLayout({ children }) {
 
   if (!user) return null;
 
+  const displayName = user.name || user.email || 'User';
+  const displayInitial = displayName.charAt(0).toUpperCase();
+  const displayRole = user.role || 'user';
+
+  const roleNotifications = getNotificationsForRole(displayRole);
+  const unreadCount = getUnreadCountForRole(displayRole);
+
+  const navigation = navigationByRole[displayRole] || [];
   const pathParts = location.pathname.split('/').filter(Boolean);
   const breadcrumbs = pathParts.map((part, index) => ({
     name: part.charAt(0).toUpperCase() + part.slice(1),
@@ -89,6 +97,11 @@ export function DashboardLayout({ children }) {
         <div className="p-6 border-b-2 border-gray-200">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-[#5B2DFF] to-[#8C6CFF] flex items-center justify-center text-white font-bold">
+              {displayInitial}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-900 truncate">{displayName}</p>
+              <p className="text-xs text-gray-500 capitalize">{displayRole}</p>
             </div>
           </div>
         </div>
@@ -121,6 +134,7 @@ export function DashboardLayout({ children }) {
         {/* Footer Actions */}
         <div className="p-4 border-t-2 border-gray-200 space-y-1">
           <Link
+            to={`/${displayRole}/settings`}
             className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${location.pathname.includes('/settings')
               ? 'bg-[#5B2DFF] text-white'
               : 'text-gray-700 hover:bg-[#F3F0FF]'
@@ -194,6 +208,7 @@ export function DashboardLayout({ children }) {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-[#5B2DFF] to-[#8C6CFF] flex items-center justify-center text-white text-sm font-bold">
+                {displayInitial}
               </div>
             </div>
           </div>

@@ -6,6 +6,7 @@ import { ForgotPassword } from './pages/ForgotPassword';
 import { Settings } from './pages/Settings';
 import { NotFound } from './pages/NotFound';
 import { Unauthorized } from './pages/Unauthorized';
+import { RouteError } from './pages/RouteError';
 
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminUsers } from './pages/admin/AdminUsers';
@@ -27,6 +28,14 @@ import { BorrowerLayout } from './components/BorrowerLayout';
 import { AnalystLayout } from './components/AnalystLayout';
 
 export const router = createBrowserRouter([
+  { path: '/', element: <LandingPage />, errorElement: <RouteError /> },
+  { path: '/login', element: <Login />, errorElement: <RouteError /> },
+  { path: '/register', element: <Register />, errorElement: <RouteError /> },
+  { path: '/forgot-password', element: <ForgotPassword />, errorElement: <RouteError /> },
+
+  {
+    path: '/admin',
+    errorElement: <RouteError />,
     element: (
       <ProtectedRoute allowedRoles={["admin"]}>
         <AdminLayout />
@@ -44,6 +53,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/lender',
+    errorElement: <RouteError />,
     element: (
       <ProtectedRoute allowedRoles={["lender"]}>
         <LenderLayout />
@@ -61,6 +71,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/borrower',
+    errorElement: <RouteError />,
     element: (
       <ProtectedRoute allowedRoles={["borrower"]}>
         <BorrowerLayout />
@@ -79,6 +90,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/analyst',
+    errorElement: <RouteError />,
     element: (
       <ProtectedRoute allowedRoles={["analyst"]}>
         <AnalystLayout />
@@ -94,3 +106,6 @@ export const router = createBrowserRouter([
       { path: 'settings', element: <Settings /> },
     ],
   },
+  { path: '/unauthorized', element: <Unauthorized />, errorElement: <RouteError /> },
+  { path: '*', element: <NotFound />, errorElement: <RouteError /> },
+]);

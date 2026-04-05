@@ -10,6 +10,10 @@ export function BorrowerOffers() {
     const handleAcceptOffer = (offer) => {
         // Convert offer to an active loan
         addLoan({
+            principalAmount: Number(offer.amount),
+            interestRate: Number(offer.interestRate),
+            durationMonths: Number(offer.tenure),
+            purpose: offer.description || 'Pre-approved loan offer',
             status: 'active', // Since it's pre-approved by a lender, we can make it active or pending
         });
         deleteOffer(offer.id); // Remove the offer from the market
