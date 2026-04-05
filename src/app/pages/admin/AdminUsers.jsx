@@ -1,3 +1,24 @@
+<<<<<<< HEAD
+import { useEffect, useMemo, useState } from 'react';
+import { Search, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { userService } from '../../../api/userService';
+import { getErrorMessage, getPageItems } from '../../../api/responseUtils';
+import { formatDate, titleCase } from '../../lib/crediflow';
+
+export function AdminUsers() {
+  const [users, setUsers] = useState([]);
+  const [query, setQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+
+  const loadUsers = async () => {
+    try {
+      const payload = await userService.getAll({ size: 100 });
+      setUsers(getPageItems(payload));
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to load users.'));
+    }
+=======
 import { Search, Filter, Eye, Ban, Trash2, UserPlus, Download } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
@@ -19,10 +40,67 @@ export function AdminUsers() {
       joinDate: data.joinDate || new Date().toISOString().split('T')[0],
     }));
     setUsers(userList);
+>>>>>>> 5ad99e5b2827ca57162b42a5a11994b1a8b4ac5c
   };
 
   useEffect(() => {
     loadUsers();
+<<<<<<< HEAD
+  }, []);
+
+  const filteredUsers = useMemo(
+    () =>
+      users.filter((user) => {
+        const matchesQuery = [user.name, user.email].some((value) =>
+          String(value || '').toLowerCase().includes(query.toLowerCase())
+        );
+        const matchesRole = roleFilter === 'all' || String(user.role).toLowerCase() === roleFilter;
+        return matchesQuery && matchesRole;
+      }),
+    [query, roleFilter, users]
+  );
+
+  const handleDelete = async (id) => {
+    try {
+      await userService.remove(id);
+      toast.success('User deleted successfully.');
+      loadUsers();
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to delete user.'));
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <section>
+        <h1 className="text-3xl font-semibold text-slate-900">Users</h1>
+        <p className="mt-2 text-slate-500">Manage registered platform users from the live backend.</p>
+      </section>
+
+      <section className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="grid gap-4 md:grid-cols-[1fr_220px]">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              className="w-full input-sharp pl-11"
+              placeholder="Search by name or email"
+            />
+          </div>
+
+          <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)} className="input-sharp">
+            <option value="all">All roles</option>
+            <option value="admin">Admin</option>
+            <option value="analyst">Analyst</option>
+            <option value="borrower">Borrower</option>
+            <option value="lender">Lender</option>
+          </select>
+        </div>
+      </section>
+
+      <section className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+=======
     // Listen for storage changes from other tabs
     const handleStorage = (e) => {
       if (e.key === 'crediflow_registered_users') loadUsers();
@@ -150,29 +228,62 @@ export function AdminUsers() {
 
       {/* Users Table */}
       <div className="card-sharp overflow-hidden">
+>>>>>>> 5ad99e5b2827ca57162b42a5a11994b1a8b4ac5c
         <div className="overflow-x-auto">
           <table className="table-sharp">
             <thead>
               <tr>
+<<<<<<< HEAD
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Verified</th>
+                <th>Joined</th>
+                <th>Action</th>
+=======
                 <th>User</th>
                 <th>Role</th>
                 <th>Status</th>
                 <th>Join Date</th>
                 <th>Actions</th>
+>>>>>>> 5ad99e5b2827ca57162b42a5a11994b1a8b4ac5c
               </tr>
             </thead>
             <tbody>
               {filteredUsers.length === 0 ? (
                 <tr>
+<<<<<<< HEAD
+                  <td colSpan={7} className="py-10 text-center text-slate-500">
+                    No users match the current filters.
+=======
                   <td colSpan={5} className="text-center py-8 text-gray-500">
                     {users.length === 0
                       ? 'No registered users yet. Users will appear here after they register.'
                       : 'No users match your search criteria.'}
+>>>>>>> 5ad99e5b2827ca57162b42a5a11994b1a8b4ac5c
                   </td>
                 </tr>
               ) : (
                 filteredUsers.map((user) => (
                   <tr key={user.id}>
+<<<<<<< HEAD
+                    <td className="font-semibold text-slate-900">{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>{titleCase(user.role)}</td>
+                    <td>
+                      <span className={user.active ? 'badge-active' : 'badge-defaulted'}>
+                        {user.active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td>{user.emailVerified ? 'Yes' : 'No'}</td>
+                    <td>{formatDate(user.createdAt)}</td>
+                    <td>
+                      <button onClick={() => handleDelete(user.id)} className="inline-flex items-center gap-2 text-sm font-semibold text-rose-700 hover:text-rose-800">
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </button>
+=======
                     <td>
                       <div>
                         <p className="font-semibold text-gray-900">{user.name}</p>
@@ -224,6 +335,7 @@ export function AdminUsers() {
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
+>>>>>>> 5ad99e5b2827ca57162b42a5a11994b1a8b4ac5c
                     </td>
                   </tr>
                 ))
@@ -231,7 +343,11 @@ export function AdminUsers() {
             </tbody>
           </table>
         </div>
+<<<<<<< HEAD
+      </section>
+=======
       </div>
+>>>>>>> 5ad99e5b2827ca57162b42a5a11994b1a8b4ac5c
     </div>
   );
 }
