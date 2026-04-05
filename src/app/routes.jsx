@@ -6,10 +6,6 @@ import { ForgotPassword } from './pages/ForgotPassword';
 import { Settings } from './pages/Settings';
 import { NotFound } from './pages/NotFound';
 import { Unauthorized } from './pages/Unauthorized';
-<<<<<<< HEAD
-import { RouteError } from './pages/RouteError';
-=======
->>>>>>> 5ad99e5b2827ca57162b42a5a11994b1a8b4ac5c
 
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminUsers } from './pages/admin/AdminUsers';
@@ -31,24 +27,6 @@ import { BorrowerLayout } from './components/BorrowerLayout';
 import { AnalystLayout } from './components/AnalystLayout';
 
 export const router = createBrowserRouter([
-<<<<<<< HEAD
-  { path: '/', element: <LandingPage />, errorElement: <RouteError /> },
-  { path: '/login', element: <Login />, errorElement: <RouteError /> },
-  { path: '/register', element: <Register />, errorElement: <RouteError /> },
-  { path: '/forgot-password', element: <ForgotPassword />, errorElement: <RouteError /> },
-
-  {
-    path: '/admin',
-    errorElement: <RouteError />,
-=======
-  { path: '/', element: <LandingPage /> },
-  { path: '/login', element: <Login /> },
-  { path: '/register', element: <Register /> },
-  { path: '/forgot-password', element: <ForgotPassword /> },
-
-  {
-    path: '/admin',
->>>>>>> 5ad99e5b2827ca57162b42a5a11994b1a8b4ac5c
     element: (
       <ProtectedRoute allowedRoles={["admin"]}>
         <AdminLayout />
@@ -66,10 +44,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '/lender',
-<<<<<<< HEAD
-    errorElement: <RouteError />,
-=======
->>>>>>> 5ad99e5b2827ca57162b42a5a11994b1a8b4ac5c
     element: (
       <ProtectedRoute allowedRoles={["lender"]}>
         <LenderLayout />
@@ -87,10 +61,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '/borrower',
-<<<<<<< HEAD
-    errorElement: <RouteError />,
-=======
->>>>>>> 5ad99e5b2827ca57162b42a5a11994b1a8b4ac5c
     element: (
       <ProtectedRoute allowedRoles={["borrower"]}>
         <BorrowerLayout />
@@ -109,10 +79,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '/analyst',
-<<<<<<< HEAD
-    errorElement: <RouteError />,
-=======
->>>>>>> 5ad99e5b2827ca57162b42a5a11994b1a8b4ac5c
     element: (
       <ProtectedRoute allowedRoles={["analyst"]}>
         <AnalystLayout />
@@ -128,12 +94,3 @@ export const router = createBrowserRouter([
       { path: 'settings', element: <Settings /> },
     ],
   },
-<<<<<<< HEAD
-  { path: '/unauthorized', element: <Unauthorized />, errorElement: <RouteError /> },
-  { path: '*', element: <NotFound />, errorElement: <RouteError /> },
-]);
-=======
-  { path: '/unauthorized', element: <Unauthorized /> },
-  { path: '*', element: <NotFound /> },
-]);
->>>>>>> 5ad99e5b2827ca57162b42a5a11994b1a8b4ac5c

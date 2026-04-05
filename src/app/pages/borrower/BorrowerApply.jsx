@@ -22,67 +22,6 @@ export function BorrowerApply() {
   const { addNotification } = useNotifications();
   const navigate = useNavigate();
 
-<<<<<<< HEAD
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!user) return;
-
-    try {
-      await addLoan({
-        principalAmount: Number(formData.amount),
-        interestRate: Number(formData.preferredRate),
-        durationMonths: Number(formData.duration),
-        purpose: formData.purpose,
-      });
-
-      addNotification('New loan application received', 'lender');
-
-      toast('Loan request submitted successfully!');
-      // redirect borrower to dashboard
-      navigate('/borrower/dashboard');
-
-      setFormData({
-        amount: '',
-        preferredRate: '',
-        duration: '',
-        purpose: '',
-        description: '',
-        income: '',
-        employment: '',
-      });
-    } catch (error) {
-      console.error(error);
-      const msg = error.response?.data?.message || 'Failed to submit loan application.';
-      toast(typeof msg === 'string' ? msg : 'Error applying for loan');
-    }
-=======
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!user) return;
-
-    const loan = addLoan({
-      borrowerId: user.id,
-      borrowerName: user.name,
-      amount: Number(formData.amount),
-      interest: Number(formData.preferredRate),
-    });
-
-    addNotification('New loan application received', 'lender');
-
-    toast('Loan request submitted successfully!');
-    // redirect borrower to dashboard
-    navigate('/borrower/dashboard');
-
-    setFormData({
-      amount: '',
-      preferredRate: '',
-      duration: '',
-      purpose: '',
-      description: '',
-      income: '',
-      employment: '',
-    });
->>>>>>> 5ad99e5b2827ca57162b42a5a11994b1a8b4ac5c
   };
 
   return (
