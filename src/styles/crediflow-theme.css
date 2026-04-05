@@ -1,0 +1,117 @@
+/* CrediFlow Custom Theme */
+
+:root {
+  --primary: #5B2DFF;
+  --primary-dark: #3A1FBF;
+  --primary-light: #F3F0FF;
+  --accent: #8C6CFF;
+  --success: #28C76F;
+  --danger: #FF4D4F;
+  --warning: #FFA940;
+  --text-dark: #2B2B2B;
+  --text-light: #6B6B6B;
+  --border: #E0E0E0;
+  --bg-light: #F8F8F8;
+}
+
+/* Remove all border radius for sharp edges */
+* {
+  border-radius: 0 !important;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--primary-light);
+  color: var(--text-dark);
+}
+
+/* Sharp buttons */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(91, 45, 255, 0.3);
+}
+
+/* Card styles */
+.card-sharp {
+  background: white;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Input styles */
+.input-sharp {
+  border: 1px solid var(--border);
+  padding: 12px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.input-sharp:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(91, 45, 255, 0.1);
+}
+
+/* Status badges */
+.badge-active {
+  background-color: var(--success);
+  color: white;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-pending {
+  background-color: var(--warning);
+  color: white;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-defaulted {
+  background-color: var(--danger);
+  color: white;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Table styles */
+.table-sharp {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-sharp th {
+  background-color: var(--primary-light);
+  color: var(--text-dark);
+  font-weight: 600;
+  padding: 12px;
+  text-align: left;
+  border-bottom: 2px solid var(--primary);
+}
+
+.table-sharp td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-sharp tbody tr:nth-child(even) {
+  background-color: #FAFAFA;
+}
+
+.table-sharp tbody tr:hover {
+  background-color: var(--primary-light);
+}
