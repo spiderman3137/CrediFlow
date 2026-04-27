@@ -3,6 +3,8 @@ import { LandingPage } from './pages/LandingPage';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { ForgotPassword } from './pages/ForgotPassword';
+import { ResetPassword } from './pages/ResetPassword';
+import { VerifyEmail } from './pages/VerifyEmail';
 import { Settings } from './pages/Settings';
 import { NotFound } from './pages/NotFound';
 import { Unauthorized } from './pages/Unauthorized';
@@ -35,6 +37,8 @@ export const router = createBrowserRouter([
   { path: '/login', element: <Login />, errorElement: <RouteError /> },
   { path: '/register', element: <Register />, errorElement: <RouteError /> },
   { path: '/forgot-password', element: <ForgotPassword />, errorElement: <RouteError /> },
+  { path: '/reset-password', element: <ResetPassword />, errorElement: <RouteError /> },
+  { path: '/verify-email', element: <VerifyEmail />, errorElement: <RouteError /> },
   { path: '/oauth2/callback', element: <OAuth2Callback />, errorElement: <RouteError /> },
 
   {

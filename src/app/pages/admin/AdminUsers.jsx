@@ -5,6 +5,10 @@ import { userService } from '../../../api/userService';
 import { excelService } from '../../../api/excelService';
 import { getErrorMessage, getPageItems } from '../../../api/responseUtils';
 import { formatDate, titleCase } from '../../lib/crediflow';
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination,
+  Button, Select, MenuItem, Chip, Typography, CircularProgress
+} from '@mui/material';
 
 const ROLES = ['all', 'admin', 'analyst', 'borrower', 'lender'];
 
@@ -95,12 +99,14 @@ function ExcelImportModal({ onClose, onSuccess }) {
 }
 
 export function AdminUsers() {
-  const [users, setUsers]             = useState([]);
-  const [query, setQuery]             = useState('');
-  const [roleFilter, setRoleFilter]   = useState('all');
-  const [loading, setLoading]         = useState(true);
+  const [users, setUsers] = useState([]);
+  const [query, setQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
   const [showImport, setShowImport]   = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [page, setPage]               = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -135,6 +141,17 @@ export function AdminUsers() {
       }),
     [query, roleFilter, users]
   );
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const paginatedUsers = filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Permanently delete this user?')) return;
@@ -222,90 +239,91 @@ export function AdminUsers() {
               placeholder="Search name, email or phone…"
             />
           </div>
-          <select
+          <Select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-[#5B2DFF] focus:outline-none focus:ring-2 focus:ring-[#5B2DFF]/20"
+            className="bg-slate-50"
+            size="small"
+            sx={{ borderRadius: '0.75rem' }}
           >
             {ROLES.map((r) => (
-              <option key={r} value={r}>{r === 'all' ? 'All Roles' : titleCase(r)}</option>
+              <MenuItem key={r} value={r}>{r === 'all' ? 'All Roles' : titleCase(r)}</MenuItem>
             ))}
-          </select>
+          </Select>
         </div>
       </section>
 
       {/* Table */}
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                {['ID', 'Name', 'Email', 'Role', 'Status', 'Verified', 'Phone', 'Joined', 'Actions'].map((h) => (
-                  <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    {Array.from({ length: 9 }).map((_, j) => (
-                      <td key={j} className="px-5 py-4"><div className="h-4 rounded bg-slate-200" /></td>
-                    ))}
-                  </tr>
-                ))
-              ) : filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="px-5 py-16 text-center text-slate-400">
-                    <FileSpreadsheet className="mx-auto mb-3 h-10 w-10 opacity-30" />
-                    <p className="font-medium">No users match your filters</p>
-                    <p className="text-xs mt-1">Try importing users via Excel or adjust your search</p>
-                  </td>
-                </tr>
-              ) : (
-                filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-5 py-3.5 text-slate-400 font-mono text-xs">#{user.id}</td>
-                    <td className="px-5 py-3.5 font-semibold text-slate-900">{user.name}</td>
-                    <td className="px-5 py-3.5 text-slate-600">{user.email}</td>
-                    <td className="px-5 py-3.5">
-                      <span className="inline-block rounded-lg bg-[#5B2DFF]/10 px-2.5 py-1 text-xs font-semibold text-[#5B2DFF]">
-                        {titleCase(user.role)}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className={`inline-block rounded-lg px-2.5 py-1 text-xs font-semibold ${user.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                        {user.active ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className={`inline-block rounded-lg px-2.5 py-1 text-xs font-semibold ${user.emailVerified ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-600'}`}>
-                        {user.emailVerified ? 'Verified' : 'Unverified'}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-slate-500">{user.phone || '-'}</td>
-                    <td className="px-5 py-3.5 text-slate-500">{formatDate(user.createdAt)}</td>
-                    <td className="px-5 py-3.5">
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-        {!loading && filteredUsers.length > 0 && (
-          <div className="border-t border-slate-200 px-5 py-3 text-xs text-slate-400">
-            Showing {filteredUsers.length} of {users.length} users
-          </div>
-        )}
-      </section>
+      <TableContainer component={Paper} elevation={0} variant="outlined" sx={{ borderRadius: '1rem', overflow: 'hidden' }}>
+        <Table sx={{ minWidth: 650 }} aria-label="users table">
+          <TableHead sx={{ backgroundColor: '#f8fafc' }}>
+            <TableRow>
+              {['ID', 'Name', 'Email', 'Role', 'Status', 'Verified', 'Phone', 'Joined', 'Actions'].map((h) => (
+                <TableCell key={h} sx={{ fontWeight: 600, color: '#64748b', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                  {h}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={9} align="center" sx={{ py: 3 }}>
+                  <CircularProgress size={24} />
+                </TableCell>
+              </TableRow>
+            ) : filteredUsers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} align="center" sx={{ py: 8 }}>
+                  {/* We remove FileSpreadsheet icon here to avoid missing import if not careful, just a simple text for now */}
+                  <Typography variant="body1" color="text.secondary" fontWeight="500">No users match your filters</Typography>
+                  <Typography variant="body2" color="text.secondary">Try importing users via Excel or adjust your search</Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedUsers.map((user) => (
+                <TableRow key={user.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableCell sx={{ fontFamily: 'monospace', color: '#94a3b8', fontSize: '0.75rem' }}>#{user.id}</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>{user.name}</TableCell>
+                  <TableCell sx={{ color: '#475569' }}>{user.email}</TableCell>
+                  <TableCell>
+                    <Chip label={titleCase(user.role)} size="small" sx={{ backgroundColor: 'rgba(91,45,255,0.1)', color: '#5B2DFF', fontWeight: 600, borderRadius: '8px' }} />
+                  </TableCell>
+                  <TableCell>
+                    <Chip label={user.active ? 'Active' : 'Inactive'} size="small" sx={{ backgroundColor: user.active ? '#d1fae5' : '#f1f5f9', color: user.active ? '#047857' : '#64748b', fontWeight: 600, borderRadius: '8px' }} />
+                  </TableCell>
+                  <TableCell>
+                    <Chip label={user.emailVerified ? 'Verified' : 'Unverified'} size="small" sx={{ backgroundColor: user.emailVerified ? '#dbeafe' : '#ffedd5', color: user.emailVerified ? '#1d4ed8' : '#ea580c', fontWeight: 600, borderRadius: '8px' }} />
+                  </TableCell>
+                  <TableCell sx={{ color: '#64748b' }}>{user.phone || '-'}</TableCell>
+                  <TableCell sx={{ color: '#64748b' }}>{formatDate(user.createdAt)}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="text"
+                      color="error"
+                      size="small"
+                      onClick={() => handleDelete(user.id)}
+                      sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', '&:hover': { backgroundColor: '#fff1f2' } }}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 50]}
+          component="div"
+          count={filteredUsers.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          sx={{ borderTop: '1px solid #e2e8f0', backgroundColor: '#fafafa' }}
+        />
+      </TableContainer>
     </div>
   );
 }

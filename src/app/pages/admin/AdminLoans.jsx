@@ -6,6 +6,10 @@ import { adminService } from '../../../api/adminService';
 import { excelService } from '../../../api/excelService';
 import { currency, formatDate, getLoanStatusTone, normalizeLoan, titleCase } from '../../lib/crediflow';
 import { getErrorMessage, getPageItems } from '../../../api/responseUtils';
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination,
+  Button, Select, MenuItem, Chip, Typography, CircularProgress, Stack
+} from '@mui/material';
 
 const STATUSES = ['all', 'pending', 'approved', 'active', 'rejected', 'closed', 'defaulted'];
 
@@ -96,12 +100,14 @@ function ExcelImportModal({ onClose, onSuccess }) {
 }
 
 export function AdminLoans() {
-  const [loans, setLoans]             = useState([]);
-  const [query, setQuery]             = useState('');
-  const [statusFilter, setStatus]     = useState('all');
-  const [loading, setLoading]         = useState(true);
-  const [showImport, setShowImport]   = useState(false);
+  const [loans, setLoans] = useState([]);
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatus] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [showImport, setShowImport] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [page, setPage]               = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const loadLoans = async () => {
     setLoading(true);
@@ -135,6 +141,17 @@ export function AdminLoans() {
       }),
     [loans, query, statusFilter]
   );
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const paginatedLoans = filteredLoans.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleDecision = async (loanId, status) => {
     try {
@@ -217,107 +234,98 @@ export function AdminLoans() {
               placeholder="Search by ID, borrower, email or purpose…"
             />
           </div>
-          <select
+          <Select
             value={statusFilter}
             onChange={(e) => setStatus(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-[#5B2DFF] focus:outline-none focus:ring-2 focus:ring-[#5B2DFF]/20"
+            className="bg-slate-50"
+            size="small"
+            sx={{ borderRadius: '0.75rem' }}
           >
             {STATUSES.map((s) => (
-              <option key={s} value={s}>{s === 'all' ? 'All Statuses' : titleCase(s)}</option>
+              <MenuItem key={s} value={s}>{s === 'all' ? 'All Statuses' : titleCase(s)}</MenuItem>
             ))}
-          </select>
+          </Select>
         </div>
       </section>
 
       {/* Table */}
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                {['Loan #', 'Borrower', 'Amount', 'EMI', 'Rate', 'Duration', 'Status', 'Created', 'Actions'].map((h) => (
-                  <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    {Array.from({ length: 9 }).map((_, j) => (
-                      <td key={j} className="px-5 py-4"><div className="h-4 rounded bg-slate-200" /></td>
-                    ))}
-                  </tr>
-                ))
-              ) : filteredLoans.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="px-5 py-16 text-center text-slate-400">
-                    <FileSpreadsheet className="mx-auto mb-3 h-10 w-10 opacity-30" />
-                    <p className="font-medium">No loans match your filters</p>
-                    <p className="text-xs mt-1">Try importing loans via Excel or adjust search</p>
-                  </td>
-                </tr>
-              ) : (
-                filteredLoans.map((loan) => (
-                  <tr key={loan.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-5 py-3.5 font-mono text-xs text-slate-500">#{loan.id}</td>
-                    <td className="px-5 py-3.5">
-                      <p className="font-semibold text-slate-900">{loan.borrowerName || '—'}</p>
-                      <p className="text-xs text-slate-400">{loan.borrowerEmail || '—'}</p>
-                    </td>
-                    <td className="px-5 py-3.5 font-semibold text-slate-900">{currency(loan.amount)}</td>
-                    <td className="px-5 py-3.5 text-slate-600">{currency(loan.emiAmount)}</td>
-                    <td className="px-5 py-3.5 text-slate-600">{loan.interest}%</td>
-                    <td className="px-5 py-3.5 text-slate-600">{loan.term} mo</td>
-                    <td className="px-5 py-3.5">
-                      <span className={`inline-block rounded-lg px-2.5 py-1 text-xs font-semibold ${getLoanStatusTone(loan.status)}`}>
-                        {loan.statusLabel}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-slate-500">{formatDate(loan.createdAt)}</td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex flex-wrap gap-2">
-                        {loan.status === 'PENDING' && (
-                          <>
-                            <button
-                              onClick={() => handleDecision(loan.id, 'APPROVED')}
-                              className="rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
-                            >
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => handleDecision(loan.id, 'REJECTED')}
-                              className="rounded-lg bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition-colors"
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-                        {loan.status === 'APPROVED' && (
-                          <button
-                            onClick={() => handleDecision(loan.id, 'ACTIVE')}
-                            className="rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
-                          >
-                            Activate
-                          </button>
-                        )}
-                        {['ACTIVE', 'CLOSED', 'REJECTED', 'DEFAULTED'].includes(loan.status) && (
-                          <span className="text-xs text-slate-400 italic">No action</span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-        {!loading && filteredLoans.length > 0 && (
-          <div className="border-t border-slate-200 px-5 py-3 text-xs text-slate-400">
-            Showing {filteredLoans.length} of {loans.length} loans
-          </div>
-        )}
-      </section>
+      <TableContainer component={Paper} elevation={0} variant="outlined" sx={{ borderRadius: '1rem', overflow: 'hidden' }}>
+        <Table sx={{ minWidth: 650 }} aria-label="loans table">
+          <TableHead sx={{ backgroundColor: '#f8fafc' }}>
+            <TableRow>
+              {['Loan #', 'Borrower', 'Amount', 'EMI', 'Rate', 'Duration', 'Status', 'Created', 'Actions'].map((h) => (
+                <TableCell key={h} sx={{ fontWeight: 600, color: '#64748b', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                  {h}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={9} align="center" sx={{ py: 3 }}>
+                  <CircularProgress size={24} />
+                </TableCell>
+              </TableRow>
+            ) : filteredLoans.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} align="center" sx={{ py: 8 }}>
+                  <Typography variant="body1" color="text.secondary" fontWeight="500">No loans match your filters</Typography>
+                  <Typography variant="body2" color="text.secondary">Try importing loans via Excel or adjust search</Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedLoans.map((loan) => (
+                <TableRow key={loan.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableCell sx={{ fontFamily: 'monospace', color: '#94a3b8', fontSize: '0.75rem' }}>#{loan.id}</TableCell>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight="600" color="#0f172a">{loan.borrowerName || '—'}</Typography>
+                    <Typography variant="caption" color="text.secondary">{loan.borrowerEmail || '—'}</Typography>
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>{currency(loan.amount)}</TableCell>
+                  <TableCell sx={{ color: '#475569' }}>{currency(loan.emiAmount)}</TableCell>
+                  <TableCell sx={{ color: '#475569' }}>{loan.interest}%</TableCell>
+                  <TableCell sx={{ color: '#475569' }}>{loan.term} mo</TableCell>
+                  <TableCell>
+                    <Chip label={loan.statusLabel} size="small" sx={{ 
+                        backgroundColor: loan.status === 'APPROVED' || loan.status === 'ACTIVE' ? '#d1fae5' : loan.status === 'DEFAULTED' || loan.status === 'REJECTED' ? '#ffe4e6' : loan.status === 'PENDING' ? '#fef3c7' : '#f1f5f9', 
+                        color: loan.status === 'APPROVED' || loan.status === 'ACTIVE' ? '#047857' : loan.status === 'DEFAULTED' || loan.status === 'REJECTED' ? '#e11d48' : loan.status === 'PENDING' ? '#b45309' : '#64748b', 
+                        fontWeight: 600, borderRadius: '8px' 
+                      }} />
+                  </TableCell>
+                  <TableCell sx={{ color: '#64748b' }}>{formatDate(loan.createdAt)}</TableCell>
+                  <TableCell>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                      {loan.status === 'PENDING' && (
+                        <>
+                          <Button size="small" color="success" onClick={() => handleDecision(loan.id, 'APPROVED')} sx={{ textTransform: 'none', fontWeight: 600 }}>Approve</Button>
+                          <Button size="small" color="error" onClick={() => handleDecision(loan.id, 'REJECTED')} sx={{ textTransform: 'none', fontWeight: 600 }}>Reject</Button>
+                        </>
+                      )}
+                      {loan.status === 'APPROVED' && (
+                        <Button size="small" color="primary" onClick={() => handleDecision(loan.id, 'ACTIVE')} sx={{ textTransform: 'none', fontWeight: 600 }}>Activate</Button>
+                      )}
+                      {['ACTIVE', 'CLOSED', 'REJECTED', 'DEFAULTED'].includes(loan.status) && (
+                        <Typography variant="caption" sx={{ color: '#94a3b8', fontStyle: 'italic' }}>No action</Typography>
+                      )}
+                    </Stack>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 50]}
+          component="div"
+          count={filteredLoans.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          sx={{ borderTop: '1px solid #e2e8f0', backgroundColor: '#fafafa' }}
+        />
+      </TableContainer>
     </div>
   );
 }

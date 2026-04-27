@@ -6,11 +6,17 @@ import { useAuth } from '../../context/AuthContext';
 import { paymentService } from '../../../api/paymentService';
 import { getPageItems } from '../../../api/responseUtils';
 import { currency, formatDate, normalizePayment } from '../../lib/crediflow';
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination,
+  Typography, Chip
+} from '@mui/material';
 
 export function BorrowerHistory() {
   const { loans } = useLoans();
   const { user } = useAuth();
   const [payments, setPayments] = useState([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const borrowerLoans = useMemo(
     () => loans.filter((loan) => loan.borrowerId === user?.id),
@@ -84,6 +90,17 @@ export function BorrowerHistory() {
     { label: 'Average payment', value: currency(averagePayment), icon: CircleDollarSign, tone: 'bg-amber-50 text-amber-700' },
   ];
 
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const paginatedPayments = payments.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
   return (
     <div className="space-y-8">
       <section>
@@ -121,44 +138,55 @@ export function BorrowerHistory() {
 
       <section className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Transaction ledger</h2>
-        <div className="mt-6 overflow-x-auto">
-          <table className="table-sharp">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Loan</th>
-                <th>Amount</th>
-                <th>Method</th>
-                <th>Status</th>
-                <th>Reference</th>
-              </tr>
-            </thead>
-            <tbody>
+        <TableContainer component={Paper} elevation={0} variant="outlined" sx={{ borderRadius: '1rem', overflow: 'hidden', mt: 3 }}>
+          <Table sx={{ minWidth: 650 }} aria-label="payment history table">
+            <TableHead sx={{ backgroundColor: '#f8fafc' }}>
+              <TableRow>
+                {['Date', 'Loan', 'Amount', 'Method', 'Status', 'Reference'].map((h) => (
+                  <TableCell key={h} sx={{ fontWeight: 600, color: '#64748b', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                    {h}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {payments.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-10 text-center text-slate-500">
-                    No payment records yet. Transactions will appear here after repayments begin.
-                  </td>
-                </tr>
+                <TableRow>
+                  <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
+                    <Typography variant="body1" color="text.secondary">No payment records yet. Transactions will appear here after repayments begin.</Typography>
+                  </TableCell>
+                </TableRow>
               ) : (
-                payments.map((payment) => (
-                  <tr key={payment.id}>
-                    <td>{formatDate(payment.paymentDate)}</td>
-                    <td className="font-semibold text-slate-900">#{payment.loanId}</td>
-                    <td className="font-semibold text-slate-900">{currency(payment.amount)}</td>
-                    <td>{payment.methodLabel}</td>
-                    <td>
-                      <span className={payment.status === 'COMPLETED' ? 'badge-active' : payment.status === 'FAILED' ? 'badge-defaulted' : 'badge-pending'}>
-                        {payment.statusLabel}
-                      </span>
-                    </td>
-                    <td className="text-slate-500">{payment.transactionReference || '-'}</td>
-                  </tr>
+                paginatedPayments.map((payment) => (
+                  <TableRow key={payment.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                    <TableCell sx={{ color: '#64748b' }}>{formatDate(payment.paymentDate)}</TableCell>
+                    <TableCell sx={{ fontFamily: 'monospace', color: '#94a3b8', fontSize: '0.75rem' }}>#{payment.loanId}</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>{currency(payment.amount)}</TableCell>
+                    <TableCell sx={{ color: '#475569' }}>{payment.methodLabel}</TableCell>
+                    <TableCell>
+                      <Chip label={payment.statusLabel} size="small" sx={{ 
+                          backgroundColor: payment.status === 'COMPLETED' ? '#d1fae5' : payment.status === 'FAILED' ? '#ffe4e6' : '#dbeafe', 
+                          color: payment.status === 'COMPLETED' ? '#047857' : payment.status === 'FAILED' ? '#e11d48' : '#1d4ed8', 
+                          fontWeight: 600, borderRadius: '8px' 
+                        }} />
+                    </TableCell>
+                    <TableCell sx={{ color: '#94a3b8' }}>{payment.transactionReference || '-'}</TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+          <TablePagination
+            rowsPerPageOptions={[10, 25, 50]}
+            component="div"
+            count={payments.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{ borderTop: '1px solid #e2e8f0', backgroundColor: '#fafafa' }}
+          />
+        </TableContainer>
       </section>
     </div>
   );

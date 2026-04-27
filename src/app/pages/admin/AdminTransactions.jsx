@@ -5,19 +5,25 @@ import { paymentService } from '../../../api/paymentService';
 import { adminService } from '../../../api/adminService';
 import { currency, formatDate, titleCase } from '../../lib/crediflow';
 import { getErrorMessage, getPageItems } from '../../../api/responseUtils';
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination,
+  Typography, Chip
+} from '@mui/material';
 
 const STATUS_CLASSES = {
   COMPLETED: 'bg-emerald-100 text-emerald-700',
-  PENDING:   'bg-amber-100 text-amber-700',
-  FAILED:    'bg-rose-100 text-rose-700',
-  REFUNDED:  'bg-blue-100 text-blue-700',
+  PENDING: 'bg-amber-100 text-amber-700',
+  FAILED: 'bg-rose-100 text-rose-700',
+  REFUNDED: 'bg-blue-100 text-blue-700',
 };
 
 export function AdminTransactions() {
-  const [payments, setPayments]     = useState([]);
-  const [query, setQuery]           = useState('');
-  const [statusFilter, setStatus]   = useState('all');
-  const [loading, setLoading]       = useState(true);
+  const [payments, setPayments] = useState([]);
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatus] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const load = async () => {
     setLoading(true);
@@ -46,6 +52,17 @@ export function AdminTransactions() {
       }),
     [payments, query, statusFilter]
   );
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const paginatedTransactions = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
     <div className="space-y-6">
@@ -86,51 +103,63 @@ export function AdminTransactions() {
 
       {/* Table */}
       <section className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
+        <TableContainer component={Paper} elevation={0} variant="outlined" sx={{ borderRadius: '1rem', overflow: 'hidden' }}>
+          <Table sx={{ minWidth: 650 }} aria-label="transactions table">
+            <TableHead sx={{ backgroundColor: '#f8fafc' }}>
+              <TableRow>
                 {['ID', 'Transaction Ref', 'User', 'Amount', 'Status', 'Payment Method', 'Date'].map((h) => (
-                  <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{h}</th>
+                  <TableCell key={h} sx={{ fontWeight: 600, color: '#64748b', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                    {h}
+                  </TableCell>
                 ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {loading ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    {Array.from({ length: 7 }).map((_, j) => (
-                      <td key={j} className="px-5 py-4"><div className="h-4 rounded bg-slate-200" /></td>
-                    ))}
-                  </tr>
-                ))
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                    <Typography variant="body1" color="text.secondary">Loading...</Typography>
+                  </TableCell>
+                </TableRow>
               ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-16 text-center text-slate-400">
-                    <p className="font-medium">No payment audit events found</p>
-                    <p className="text-xs mt-1">Make payments to populate this view</p>
-                  </td>
-                </tr>
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
+                    <Typography variant="body1" color="text.secondary" fontWeight="500">No payment audit events found</Typography>
+                    <Typography variant="body2" color="text.secondary">Make payments to populate this view</Typography>
+                  </TableCell>
+                </TableRow>
               ) : (
-                filtered.map((log, i) => (
-                  <tr key={log.id ?? i} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-5 py-3.5 font-mono text-xs text-slate-400">#{log.id}</td>
-                    <td className="px-5 py-3.5 font-semibold text-slate-900">{log.transactionReference || '—'}</td>
-                    <td className="px-5 py-3.5 text-slate-600">{log.userName || '—'}</td>
-                    <td className="px-5 py-3.5 font-medium text-slate-900">{currency(log.amount)}</td>
-                    <td className="px-5 py-3.5">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_CLASSES[log.status] || 'bg-slate-100 text-slate-700'}`}>
-                        {log.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-slate-600">{titleCase(log.paymentMethod || '—')}</td>
-                    <td className="px-5 py-3.5 text-slate-400">{formatDate(log.paymentDate)}</td>
-                  </tr>
+                paginatedTransactions.map((log, i) => (
+                  <TableRow key={log.id ?? i} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                    <TableCell sx={{ fontFamily: 'monospace', color: '#94a3b8', fontSize: '0.75rem' }}>#{log.id}</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>{log.transactionReference || '—'}</TableCell>
+                    <TableCell sx={{ color: '#475569' }}>{log.userName || '—'}</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>{currency(log.amount)}</TableCell>
+                    <TableCell>
+                      <Chip label={log.status} size="small" sx={{ 
+                          backgroundColor: log.status === 'COMPLETED' ? '#d1fae5' : log.status === 'FAILED' ? '#ffe4e6' : log.status === 'PENDING' ? '#fef3c7' : '#dbeafe', 
+                          color: log.status === 'COMPLETED' ? '#047857' : log.status === 'FAILED' ? '#e11d48' : log.status === 'PENDING' ? '#b45309' : '#1d4ed8', 
+                          fontWeight: 600, borderRadius: '8px' 
+                        }} />
+                    </TableCell>
+                    <TableCell sx={{ color: '#475569' }}>{titleCase(log.paymentMethod || '—')}</TableCell>
+                    <TableCell sx={{ color: '#64748b' }}>{formatDate(log.paymentDate)}</TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+          <TablePagination
+            rowsPerPageOptions={[10, 25, 50]}
+            component="div"
+            count={filtered.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{ borderTop: '1px solid #e2e8f0', backgroundColor: '#fafafa' }}
+          />
+        </TableContainer>
       </section>
     </div>
   );

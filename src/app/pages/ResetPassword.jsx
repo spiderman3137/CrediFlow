@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { authService } from '../../api/authService';
 import { toast } from 'sonner';
 import {
@@ -13,22 +13,34 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { CheckCircle, Email, ArrowBack, Send } from '@mui/icons-material';
+import { CheckCircle, LockReset, Visibility, VisibilityOff, ArrowBack } from '@mui/icons-material';
 
-export function ForgotPassword() {
-  const [email, setEmail] = useState('');
+
+export function ResetPassword() {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
+  const [newPassword, setNewPassword] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!token) {
+      toast.error('Invalid or missing reset token.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters.');
+      return;
+    }
     setLoading(true);
     try {
-      await authService.forgotPassword(email);
+      await authService.resetPassword(token, newPassword);
       setSubmitted(true);
     } catch (error) {
       toast.error(
-        error?.response?.data?.message || 'Failed to send reset link. Please try again.'
+        error?.response?.data?.message || 'Failed to reset password. The link may have expired.'
       );
     } finally {
       setLoading(false);
@@ -70,6 +82,7 @@ export function ForgotPassword() {
         <CardContent sx={{ p: 5 }}>
           {!submitted ? (
             <>
+              {/* Icon */}
               <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
                 <Box
                   sx={{
@@ -82,32 +95,42 @@ export function ForgotPassword() {
                     justifyContent: 'center',
                   }}
                 >
-                  <Email sx={{ fontSize: 38, color: '#7c3aed' }} />
+                  <LockReset sx={{ fontSize: 38, color: '#7c3aed' }} />
                 </Box>
               </Box>
 
               <Typography variant="h5" fontWeight={700} color="text.primary" textAlign="center" gutterBottom>
-                Forgot Password?
+                Reset Password
               </Typography>
               <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 4 }}>
-                No worries! Enter your email and we'll send you a secure reset link.
+                Enter your new password below to regain access to your account.
               </Typography>
 
               <form onSubmit={handleSubmit}>
                 <Stack spacing={2.5}>
                   <TextField
-                    label="Email Address"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    label="New Password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
                     required
                     fullWidth
                     size="small"
-                    placeholder="you@example.com"
+                    helperText="Minimum 6 characters"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Email sx={{ fontSize: 18, color: 'text.secondary' }} />
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <Button
+                            size="small"
+                            onClick={() => setShowPassword(!showPassword)}
+                            sx={{ minWidth: 'auto', p: 0.5 }}
+                          >
+                            {showPassword ? (
+                              <VisibilityOff sx={{ fontSize: 18 }} />
+                            ) : (
+                              <Visibility sx={{ fontSize: 18 }} />
+                            )}
+                          </Button>
                         </InputAdornment>
                       ),
                     }}
@@ -119,7 +142,7 @@ export function ForgotPassword() {
                     variant="contained"
                     fullWidth
                     disabled={loading}
-                    startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <Send />}
+                    startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <LockReset />}
                     sx={{
                       borderRadius: 2.5,
                       py: 1.3,
@@ -131,7 +154,7 @@ export function ForgotPassword() {
                       '&:hover': { background: 'linear-gradient(135deg, #4a22d4, #6d28d9)' },
                     }}
                   >
-                    {loading ? 'Sending Reset Link...' : 'Send Reset Link'}
+                    {loading ? 'Resetting...' : 'Reset Password'}
                   </Button>
 
                   <Button
@@ -171,16 +194,10 @@ export function ForgotPassword() {
               </Box>
 
               <Typography variant="h5" fontWeight={700} color="text.primary" gutterBottom>
-                Check Your Email
+                Password Reset!
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                We've sent password reset instructions to
-              </Typography>
-              <Typography variant="body2" fontWeight={700} color="#5B2DFF" sx={{ mb: 4 }}>
-                {email}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 4 }}>
-                The link will expire in 1 hour. Check your spam folder if you don't see it.
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+                Your password has been successfully changed. You can now log in with your new password.
               </Typography>
 
               <Button
@@ -193,12 +210,12 @@ export function ForgotPassword() {
                   py: 1.3,
                   textTransform: 'none',
                   fontWeight: 600,
-                  background: 'linear-gradient(135deg, #5B2DFF, #7c3aed)',
-                  boxShadow: '0 4px 15px rgba(91,45,255,0.3)',
-                  '&:hover': { background: 'linear-gradient(135deg, #4a22d4, #6d28d9)' },
+                  background: 'linear-gradient(135deg, #059669, #047857)',
+                  boxShadow: '0 4px 15px rgba(5,150,105,0.3)',
+                  '&:hover': { background: 'linear-gradient(135deg, #047857, #065f46)' },
                 }}
               >
-                Back to Login
+                Login to Account
               </Button>
             </Box>
           )}

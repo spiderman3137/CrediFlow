@@ -7,11 +7,17 @@ import { useAuth } from '../../context/AuthContext';
 import { paymentService } from '../../../api/paymentService';
 import { getPageItems } from '../../../api/responseUtils';
 import { currency, formatDate, getLoanStatusTone, normalizePayment } from '../../lib/crediflow';
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination,
+  Typography, Chip, CircularProgress
+} from '@mui/material';
 
 export function BorrowerDashboard() {
   const { loans, loading } = useLoans();
   const { user } = useAuth();
   const [payments, setPayments] = useState([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const borrowerLoans = useMemo(
     () => loans.filter((loan) => loan.borrowerId === user?.id),
@@ -83,6 +89,17 @@ export function BorrowerDashboard() {
     { label: 'Total paid', value: currency(totalPaid), icon: Landmark, tone: 'bg-emerald-50 text-emerald-700' },
     { label: 'Next due', value: nextDueLoan ? formatDate(nextDueLoan.startDate || nextDueLoan.createdAt) : '-', icon: CalendarClock, tone: 'bg-sky-50 text-sky-700' },
   ];
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const paginatedLoans = borrowerLoans.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
     <div className="space-y-8">
@@ -170,44 +187,62 @@ export function BorrowerDashboard() {
           </Link>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="table-sharp">
-            <thead>
-              <tr>
-                <th>Loan</th>
-                <th>Purpose</th>
-                <th>Amount</th>
-                <th>EMI</th>
-                <th>Outstanding</th>
-                <th>Status</th>
-                <th>Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {!loading && borrowerLoans.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-10 text-center text-slate-500">
-                    No loans found yet. Submit your first application to get started.
-                  </td>
-                </tr>
+        <TableContainer component={Paper} elevation={0} variant="outlined" sx={{ borderRadius: '1rem', overflow: 'hidden' }}>
+          <Table sx={{ minWidth: 650 }} aria-label="borrower loans">
+            <TableHead sx={{ backgroundColor: '#f8fafc' }}>
+              <TableRow>
+                {['Loan', 'Purpose', 'Amount', 'EMI', 'Outstanding', 'Status', 'Created'].map((h) => (
+                  <TableCell key={h} sx={{ fontWeight: 600, color: '#64748b', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                    {h}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                    <CircularProgress size={24} />
+                  </TableCell>
+                </TableRow>
+              ) : borrowerLoans.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
+                    <Typography variant="body1" color="text.secondary" fontWeight="500">No loans found yet. Submit your first application to get started.</Typography>
+                  </TableCell>
+                </TableRow>
               ) : (
-                borrowerLoans.map((loan) => (
-                  <tr key={loan.id}>
-                    <td className="font-semibold text-slate-900">#{loan.id}</td>
-                    <td className="text-slate-700">{loan.purpose || 'General financing'}</td>
-                    <td className="font-semibold text-slate-900">{currency(loan.amount)}</td>
-                    <td>{currency(loan.emiAmount)}</td>
-                    <td className="font-semibold text-rose-700">{currency(loan.remainingBalance)}</td>
-                    <td>
-                      <span className={getLoanStatusTone(loan.status)}>{loan.statusLabel}</span>
-                    </td>
-                    <td>{formatDate(loan.createdAt)}</td>
-                  </tr>
+                paginatedLoans.map((loan) => (
+                  <TableRow key={loan.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                    <TableCell sx={{ fontFamily: 'monospace', color: '#94a3b8', fontSize: '0.75rem' }}>#{loan.id}</TableCell>
+                    <TableCell sx={{ color: '#475569' }}>{loan.purpose || 'General financing'}</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>{currency(loan.amount)}</TableCell>
+                    <TableCell sx={{ color: '#475569' }}>{currency(loan.emiAmount)}</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#e11d48' }}>{currency(loan.remainingBalance)}</TableCell>
+                    <TableCell>
+                      <Chip label={loan.statusLabel} size="small" sx={{ 
+                          backgroundColor: loan.status === 'APPROVED' || loan.status === 'ACTIVE' ? '#d1fae5' : loan.status === 'DEFAULTED' || loan.status === 'REJECTED' ? '#ffe4e6' : loan.status === 'PENDING' ? '#fef3c7' : '#f1f5f9', 
+                          color: loan.status === 'APPROVED' || loan.status === 'ACTIVE' ? '#047857' : loan.status === 'DEFAULTED' || loan.status === 'REJECTED' ? '#e11d48' : loan.status === 'PENDING' ? '#b45309' : '#64748b', 
+                          fontWeight: 600, borderRadius: '8px' 
+                        }} />
+                    </TableCell>
+                    <TableCell sx={{ color: '#64748b' }}>{formatDate(loan.createdAt)}</TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+          <TablePagination
+            rowsPerPageOptions={[10, 25, 50]}
+            component="div"
+            count={borrowerLoans.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{ borderTop: '1px solid #e2e8f0', backgroundColor: '#fafafa' }}
+          />
+        </TableContainer>
       </section>
     </div>
   );

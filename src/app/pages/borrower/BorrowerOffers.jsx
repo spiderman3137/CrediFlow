@@ -2,10 +2,20 @@ import { DollarSign, Percent, Calendar, CheckCircle } from 'lucide-react';
 import { useLoans } from '../../context/LoanContext';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
+import { useState } from 'react';
+import { Pagination, Stack, Typography, Card, CardContent, Divider, Chip, Button, Paper } from '@mui/material';
 
 export function BorrowerOffers() {
     const { offers, addLoan, deleteOffer } = useLoans();
     const { user } = useAuth();
+    const [page, setPage] = useState(1);
+    const offersPerPage = 10;
+
+    const handlePageChange = (event, value) => {
+        setPage(value);
+    };
+
+    const paginatedOffers = offers.slice((page - 1) * offersPerPage, page * offersPerPage);
 
     const handleAcceptOffer = (offer) => {
         // Convert offer to an active loan
@@ -27,65 +37,88 @@ export function BorrowerOffers() {
                 <p className="text-gray-600">Browse and accept loan offers from our lenders</p>
             </div>
 
-            <div className="space-y-4">
+            <Stack spacing={3}>
                 {offers.length === 0 ? (
-                    <div className="text-center py-12 text-gray-500 bg-white border border-gray-200 shadow-sm">
-                        No loan offers available at the moment. Please check back later.
-                    </div>
+                    <Paper variant="outlined" sx={{ p: 6, textAlign: 'center', backgroundColor: '#f9fafb', borderColor: '#e2e8f0', borderRadius: '1rem' }}>
+                        <Typography variant="body1" color="text.secondary">No loan offers available at the moment. Please check back later.</Typography>
+                    </Paper>
                 ) : (
-                    offers.map((offer) => (
-                        <div key={offer.id} className="card-sharp p-6 flex flex-col md:flex-row gap-6 justify-between items-center transition-all hover:border-[#5B2DFF] border-2 border-transparent bg-white shadow-sm">
-                            <div className="flex-1 space-y-4 w-full">
-                                <div className="flex items-center gap-2">
-                                    <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold uppercase rounded-full tracking-wider">
-                                        {offer.riskCategory} Risk
-                                    </span>
-                                    <span className="text-sm text-gray-500">
-                                        Posted on {new Date(offer.createdAt).toLocaleDateString()}
-                                    </span>
+                    paginatedOffers.map((offer) => (
+                        <Card key={offer.id} elevation={0} variant="outlined" sx={{ borderRadius: '1rem', transition: 'all 0.2s', '&:hover': { borderColor: '#5B2DFF', boxShadow: '0 4px 20px rgba(91,45,255,0.08)' } }}>
+                            <CardContent sx={{ p: 4, '&:last-child': { pb: 4 } }}>
+                                <div className="flex flex-col md:flex-row gap-6 justify-between items-center">
+                                    <div className="flex-1 space-y-4 w-full">
+                                        <div className="flex items-center gap-2">
+                                            <Chip label={`${offer.riskCategory} Risk`} size="small" sx={{ backgroundColor: '#d1fae5', color: '#166534', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', borderRadius: '4px' }} />
+                                            <Typography variant="caption" color="text.secondary">
+                                                Posted on {new Date(offer.createdAt).toLocaleDateString()}
+                                            </Typography>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                                            <div>
+                                                <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}><DollarSign className="w-4 h-4" /> Amount</Typography>
+                                                <Typography variant="h6" fontWeight="bold" color="text.primary">${Number(offer.amount).toLocaleString()}</Typography>
+                                            </div>
+                                            <div>
+                                                <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}><Percent className="w-4 h-4" /> Interest</Typography>
+                                                <Typography variant="h6" fontWeight="bold" color="#5B2DFF">{offer.interestRate}% <span className="text-xs text-gray-400 font-normal">p.a.</span></Typography>
+                                            </div>
+                                            <div>
+                                                <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}><Calendar className="w-4 h-4" /> Tenure</Typography>
+                                                <Typography variant="h6" fontWeight="bold" color="text.primary">{offer.tenure} <span className="text-sm text-gray-500 font-normal">Months</span></Typography>
+                                            </div>
+                                            <div>
+                                                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>Monthly EMI</Typography>
+                                                <Typography variant="h6" fontWeight="bold" color="#ea580c">
+                                                    ${((Number(offer.amount) * (1 + (Number(offer.interestRate) || 0) / 100)) / (Number(offer.tenure) || 12)).toFixed(2)}
+                                                </Typography>
+                                            </div>
+                                        </div>
+
+                                        {offer.description && (
+                                            <Typography variant="body2" sx={{ backgroundColor: '#f8fafc', p: 1.5, borderRadius: '8px', border: '1px solid #f1f5f9', color: '#475569', mt: 2 }}>
+                                                <strong>Terms:</strong> {offer.description}
+                                            </Typography>
+                                        )}
+                                    </div>
+
+                                    <div className="w-full md:w-auto md:pl-4">
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => handleAcceptOffer(offer)}
+                                            fullWidth
+                                            sx={{ 
+                                                backgroundColor: '#28C76F', 
+                                                '&:hover': { backgroundColor: '#209d57' },
+                                                px: 4, py: 1.5,
+                                                borderRadius: '0.75rem',
+                                                textTransform: 'none',
+                                                fontWeight: 600,
+                                                boxShadow: 'none'
+                                            }}
+                                            startIcon={<CheckCircle className="w-5 h-5" />}
+                                        >
+                                            Accept Offer
+                                        </Button>
+                                    </div>
                                 </div>
-
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div>
-                                        <p className="text-sm text-gray-500 mb-1 flex items-center gap-1"><DollarSign className="w-4 h-4" /> Amount</p>
-                                        <p className="text-xl font-bold text-gray-900">${Number(offer.amount).toLocaleString()}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500 mb-1 flex items-center gap-1"><Percent className="w-4 h-4" /> Interest</p>
-                                        <p className="text-xl font-bold text-[#5B2DFF]">{offer.interestRate}% <span className="text-xs text-gray-400 font-normal">p.a.</span></p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500 mb-1 flex items-center gap-1"><Calendar className="w-4 h-4" /> Tenure</p>
-                                        <p className="text-xl font-bold text-gray-900">{offer.tenure} <span className="text-sm text-gray-500 font-normal">Months</span></p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500 mb-1">Monthly EMI</p>
-                                        <p className="text-xl font-bold text-orange-600">
-                                            ${((Number(offer.amount) * (1 + (Number(offer.interestRate) || 0) / 100)) / (Number(offer.tenure) || 12)).toFixed(2)}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {offer.description && (
-                                    <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded border border-gray-100">
-                                        <strong>Terms:</strong> {offer.description}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="w-full md:w-auto">
-                                <button
-                                    onClick={() => handleAcceptOffer(offer)}
-                                    className="w-full md:w-auto btn-primary flex items-center justify-center gap-2 px-8 py-3 bg-[#28C76F] hover:bg-[#209d57]"
-                                >
-                                    <CheckCircle className="w-5 h-5" />
-                                    Accept Offer
-                                </button>
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
                     ))
                 )}
-            </div>
+                
+                {offers.length > offersPerPage && (
+                    <div className="flex justify-center mt-6">
+                        <Pagination 
+                            count={Math.ceil(offers.length / offersPerPage)} 
+                            page={page} 
+                            onChange={handlePageChange} 
+                            color="primary"
+                        />
+                    </div>
+                )}
+            </Stack>
         </div>
     );
 }

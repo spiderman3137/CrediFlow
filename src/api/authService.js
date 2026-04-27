@@ -39,5 +39,20 @@ export const authService = {
   logout: async () => {
     const response = await apiClient.post('/api/auth/logout');
     return unwrapApiResponse(response);
+  },
+
+  verifyEmail: async (token) => {
+    const response = await apiClient.post(`/api/auth/verify-email?token=${token}`);
+    return unwrapApiResponse(response);
+  },
+
+  forgotPassword: async (email) => {
+    const response = await apiClient.post('/api/auth/forgot-password', { email });
+    return unwrapApiResponse(response);
+  },
+
+  resetPassword: async (token, newPassword) => {
+    const response = await apiClient.post('/api/auth/reset-password', { token, newPassword });
+    return unwrapApiResponse(response);
   }
 };
